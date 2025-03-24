@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Schedule Naposo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Style CSS -->
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(to bottom, #323232 0%, #3F3F3F 40%, #1C1C1C 150%), 
+                linear-gradient(to top, rgba(255,255,255,0.40) 0%, rgba(0,0,0,0.25) 200%);
+    background-blend-mode: multiply;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    background-color: #00ffd0;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    overflow-x: auto; /* Tambahan agar tabel tidak pecah di layar kecil */
+}
+
+.title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #222;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #222;
+}
+
+input[type="text"], input[type="time"], .btn {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+}
+
+input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    
+}
+
+.btn {
+    background-color: #3a3737;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    margin-top: 10px;
+}
+
+.btn:hover {
+    background-color: #4f4f4f;
+}
+
+.timetable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.timetable th,
+.timetable td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    font-size: 0.9rem;
+    background-color: #fff;
+}
+
+.timetable th {
+    background-color: #3a3737;
+    color: #fff;
+}
+.timetable tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.timetable tr:hover {
+    background-color: #ddd;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h4 class="title">Time Schedule Naposobulung</h4>
+        <form id="timetable-form">
+            <div class="form-group">
+                <label for="nama_kegiatan">Nama Kegiatan</label>
+                <input type="text" id="nama_kegiatan" required placeholder="Masukkan Nama Kegiatan">
+            </div>
+            <div class="form-group">
+                <label for="date">Tanggal/Bulan</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label for="days">Hari:</label>
+                <div id="days" class="checkbox-group">
+                    <label><input type="checkbox" value="senin"> Senin</label>
+                    <label><input type="checkbox" value="selasa"> Selasa</label>
+                    <label><input type="checkbox" value="rabu"> Rabu</label>
+                    <label><input type="checkbox" value="kamis"> Kamis</label>
+                    <label><input type="checkbox" value="jumat"> Jumat </label>
+                    <label><input type="checkbox" value="sabtu"> Sabtu</label>
+                    <label><input type="checkbox" value="minggu "> Minggu</label>
+                </div>
+            </div>
+            <button type="submit" class="btn">Masukkan Jadwal</button>
+        </form>
+        <table id="timetable" class="timetable">
+            <thead>
+                <tr>
+                    <th>Tanggal/Bulan</th>
+                    <th>Senin</th>
+                    <th>Selasa</th>
+                    <th>Rabu</th>
+                    <th>Kamis</th>
+                    <th>Jumat</th>
+                    <th>Sabtu</th>
+                    <th>Minggu</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Script JS -->
+    <script>
+       document.getElementById('timetable-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // Cegah form submit default
+
+    const namaKegiatan = document.getElementById('nama_kegiatan').value.trim();
+    const date = document.getElementById('date').value;
+    const dayCheckboxes = document.querySelectorAll('#days input[type="checkbox"]:checked');
+    const timetableBody = document.querySelector('#timetable tbody');
+
+    if (!namaKegiatan || !date || dayCheckboxes.length === 0) {
+        alert('Silakan isi semua kolom dan pilih setidaknya satu hari!');
+        return;
+    }
+
+    // Ambil hari-hari yang dipilih
+    const selectedDays = Array.from(dayCheckboxes).map(cb => cb.value.toLowerCase().trim());
+
+    // Periksa apakah sudah ada baris untuk tanggal tersebut
+    let existingRow = Array.from(timetableBody.rows).find(row => row.cells[0].textContent === date);
+
+    if (!existingRow) {
+        // Buat baris baru jika belum ada
+        const newRow = document.createElement('tr');
+        let rowHTML = `<td>${date}</td>`;
+        for (let i = 0; i < 7; i++) {
+            rowHTML += '<td></td>';
+        }
+        newRow.innerHTML = rowHTML;
+
+        // Masukkan nama kegiatan ke kolom hari yang dipilih
+        selectedDays.forEach(day => {
+            const dayIndex = getDayIndex(day); // Fungsi bantu
+            if (dayIndex >= 1 && dayIndex <= 7) {
+                newRow.cells[dayIndex].textContent = namaKegiatan;
+            }
+        });
+
+        timetableBody.appendChild(newRow);
+    } else {
+        // Jika sudah ada baris, tambahkan nama kegiatan ke kolom hari yang sesuai
+        selectedDays.forEach(day => {
+            const dayIndex = getDayIndex(day);
+            if (dayIndex >= 1 && dayIndex <= 7) {
+                if (existingRow.cells[dayIndex].textContent) {
+                    // Tambah ke baris yang sudah ada, pisahkan dengan koma
+                    existingRow.cells[dayIndex].textContent += ', ' + namaKegiatan;
+                } else {
+                    existingRow.cells[dayIndex].textContent = namaKegiatan;
+                }
+            }
+        });
+    }
+
+    // Reset form setelah submit
+    document.getElementById('timetable-form').reset();
+});
+
+function getDayIndex(day) {
+    const days = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
+    return days.indexOf(day) + 1; // +1 karena cell[0] adalah Tanggal
+} 
+    </script>
+</body>
+</html>
